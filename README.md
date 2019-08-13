@@ -8,7 +8,7 @@ In order to accomplish the above stated tasks there are 4 scripts:
 
 1. `LabSetup.sh` contains the initial variables and is the start script to execute with options depending on your needs described below in `Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of charts you desire`.
 
-2. `NamespaceSetup.sh` contains the logic to setup namespaces with necessary credentials based on clusterroles in the `wsc-ibp-icp-cluster.icp`. It also gets the values necessary values for the optools helm chart. For example, it finds first available ports for each chart and hands them out to helm releases in sequential order.
+2. `NamespaceSetup.sh` contains the logic to setup namespaces with necessary credentials based on clusterroles in this repo. Apply with `kubectl apply -f` as mentioned in the **Pre-reqs** section. It also gets the values necessary values for the optools helm chart. For example, it finds first available ports for each chart and hands them out to helm releases in sequential order.
 
 3. `create_optools.sh` contains the helm deploy logic for the optools helm chart
 
@@ -117,7 +117,7 @@ You should now find success. If you don't please troubleshoot further before pro
 #### If you don't already have a local helm repo mirror, please configure one
 
 ```
-helm repo add wsc-charts https://wsc-ibp-icp-cluster.icp:8443/helm-repo/charts
+helm repo add blockchain-charts https://mycluster.icp:8443/helm-repo/charts
 helm repo update
 ```
 
@@ -143,7 +143,7 @@ For example, to set up team06 to team10 use:
 TEAM_NUMBER=11 PREFIX=garrett START_NUMBER=6 ./LabSetup.sh
 ```
 
-**Default helm repo is *wsc-charts*. If your icp mirror is named something else (i.e. IloveBeingDifferent)**
+**Default helm repo is *blockchain-charts*. If your icp mirror is named something else (i.e. IloveBeingDifferent)**
 
 ```
 helm repo update 
