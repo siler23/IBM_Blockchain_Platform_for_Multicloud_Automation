@@ -68,14 +68,10 @@ Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"8ddf4db6a545dc609539ad8
 
    You only need to apply these once per cluster, so if they already exist in the correct configuration, you can skip this step.
 
-   If not:
+   If not, apply all while in the `IBM_Blockchain_Platform_for_Multicloud_Automation` you cloned with:
 
    ```
-   kubectl apply -f crd-clusterrole.yaml
-   ```
-
-   ```
-   kubectl apply -f ibm-blockchain-platform-clusterrole.yaml
+   kubectl apply -f .
    ```
 
 ## Login and Configuration
