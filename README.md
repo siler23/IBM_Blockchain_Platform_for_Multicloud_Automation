@@ -86,9 +86,9 @@ Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"8ddf4db6a545dc609539ad8
 cloudctl login -a https://mycluster.icp:8443 -n default
 ```
 
-### Troubleshooting Login
+#### Troubleshooting Login
 
-#### Troubleshooting cannot connect error
+##### Troubleshooting cannot connect error
 
 1. Check to make sure vpn is running, if applicable
 
@@ -100,7 +100,7 @@ cloudctl login -a https://mycluster.icp:8443 -n default
    echo "192.168.22.81   wsc-ibp-icp-cluster.icp" | sudo tee -a /etc/hosts
    ```
 
-#### Troubleshooting x509 error on Login to your ICP Cluster (ONLY If above step [`cloudctl login`] failed)
+##### Troubleshooting x509 error on Login to your ICP Cluster (ONLY If above step [`cloudctl login`] failed)
 
 If this fails with x509 error, it means you need to trust a ca cert for the cluster.
 
