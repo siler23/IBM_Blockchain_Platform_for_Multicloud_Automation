@@ -59,7 +59,7 @@ export PROXY_IP=${PROXY_IP:-"$(kubectl get nodes -l proxy -o jsonpath='{.items[0
 export MULTIARCH=${MULTIARCH:-"true"}
 
 # Storage class for dynamic provisioning
-export STORAGE_CLASS=${STORAGE_CLASS:-"nfs-share"}
+export STORAGE_CLASS=${STORAGE_CLASS:-"managed-nfs-share"}
 
 # Hostname for ICP Cluster
 export CLUSTER_HOSTNAME=${CLUSTER_HOSTNAME:-"mycluster.icp"}
@@ -92,7 +92,7 @@ export IBP_CLUSTERROLE=${IBP_CLUSTERROLE:-"ibm-blockchain-platform-clusterrole"}
 export CRD_CLUSTERROLE=${CRD_CLUSTERROLE:-"crd-clusterrole"}
 
 # Clusterrole to give access to privileged psp
-export PSP_CLUSTERROLE=${PSP_CLUSTERROLE:-"ibm-blockchain-platform-psp"}
+export PSP_CLUSTERROLE=${PSP_CLUSTERROLE:-"ibm-blockchain-platform-psp-clusterrole"}
 
 # Name of new service account to be created in each namespace to dole out extra permissions
 export SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-"ibp"}

@@ -18,10 +18,10 @@ In order to accomplish the above stated tasks there are 4 scripts:
 
 1. clone using ssh key: 
 ```
-git clone git@github.com:siler23/IBM_Blockchain_Platform_for_Multicloud_Automation.git
+git clone git@github.com:siler23/IBM_Blockchain_Platform_for_Multicloud_Automation.git MultiCloud-Automation
 ```
 
-Note: The final word `IBM_Blockchain_Platform_for_Multicloud_Automation` will be the name of the directory once cloned. You can change this as you see fit to have a different directory name. For example, if you wanted the directory to be named `SetOperationalToolingUpForMe` you would use `git clone git@github.ibm.com:Garrett-Lee-Woodworth/MultiCloud-Lab-Automation.git SetOperationalToolingUpForMe`
+Note: The final word `MultiCloud-Automation` will be the name of the directory once cloned. You can change this as you see fit to have a different directory name. For example, if you wanted the directory to be named `SetOperationalToolingUpForMe` you would use `git clone git@github.ibm.com:Garrett-Lee-Woodworth/MultiCloud-Lab-Automation.git SetOperationalToolingUpForMe`
 
 2. clone using https: 
 ```
