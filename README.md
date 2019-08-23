@@ -127,7 +127,7 @@ You should now find success. If you don't please troubleshoot further before pro
 ### If you don't already have a local helm repo mirror, please configure one
 
 ```
-helm repo add blockchain-charts https://mycluster.icp:8443/helm-repo/charts
+helm repo add blockchain-charts --ca-file "${HOME}"/.helm/ca.pem --cert-file "${HOME}"/.helm/cert.pem --key-file "${HOME}"/.helm/key.pem https://mycluster.icp:8443/helm-repo/charts
 helm repo update
 ```
 
@@ -151,13 +151,13 @@ The prefix makes it so different users can coexist. Please check to make sure yo
 For example, to set up the admin email for 5 consoles use the following setup:
 
 ```
-TEAM_NUMBER=5 PREFIX=<chosen_prefix> ADMIN_EMAIL=<admin_email> ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=5 PREFIX=<chosen_prefix> ADMIN_EMAIL="<admin_email>" ./Redbook_Blockchain_Setup.sh
 ```
 
 For example:
 
 ```
-TEAM_NUMBER=5 PREFIX=email-time ADMIN_EMAIL=siler23@gmail.com ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=5 PREFIX=email-time ADMIN_EMAIL="siler23@ibm.com" ./Redbook_Blockchain_Setup.sh
 ```
 
 **If you wish to start off midway through setup due to add additional consoles (or do to a snag), use START_NUMBER=x where x is the team you wish to start with**

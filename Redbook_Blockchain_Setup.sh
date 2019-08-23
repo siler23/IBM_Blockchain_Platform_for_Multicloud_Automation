@@ -59,7 +59,7 @@ export PROXY_IP=${PROXY_IP:-"$(kubectl get nodes -l proxy -o jsonpath='{.items[0
 export MULTIARCH=${MULTIARCH:-"true"}
 
 # Storage class for dynamic provisioning
-export STORAGE_CLASS=${STORAGE_CLASS:-"managed-nfs-share"}
+export STORAGE_CLASS=${STORAGE_CLASS:-"managed-nfs-storage"}
 
 # Hostname for ICP Cluster
 export CLUSTER_HOSTNAME=${CLUSTER_HOSTNAME:-"mycluster.icp"}
