@@ -53,8 +53,8 @@ do
     fi
     export NAMESPACE="${PREFIX}-${team}"
     export UI_SECRET="${team}-ibp-ui-secret"
-    export INITIAL_PASSWORD="${team}pw"
-    export DOCKER_SECRET="${team}-icp-docker-registry"
+    export INITIAL_PASSWORD="${team}pw${RANDOM}"
+    export DOCKER_SECRET="blockchain-docker-registry"
     
     set -x
     kubectl create ns "${NAMESPACE}"
@@ -103,8 +103,8 @@ do
     echo "****************   TEAM${i}  ****************" >> portList.txt
     echo "${team} optools URL: https://${PROXY_IP}:${OPTOOLS_PORT}" >> portList.txt
     echo "${team} proxy URL: https://${PROXY_IP}:${PROXY_PORT}" >> portList.txt
-    echo "${team} USERNAME: ${team}@ibm.com" >> portList.txt
-    echo "${team} PASSWORD: ${team}pw" >> portList.txt
+    echo "${team} USERNAME: ${EMAIL}" >> portList.txt
+    echo "${team} PASSWORD: ${INITIAL_PASSWORD}" >> portList.txt
     echo >> portList.txt
     
     if [ $? != 0 ]
@@ -141,8 +141,8 @@ do
     # exposed ports to the list when they do.
     while (( $SECONDS < 600 ));
     do 
-        HELM_NAME=${PREFIX}-${team}-ibp-console
         NAMESPACE="${PREFIX}-${team}"
+        HELM_NAME="${NAMESPACE}"-ibp-console
         POD_NAME=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $1}')
         POD_STATUS=$(kubectl get pods -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $3}')
         TOTAL_CONTAINERS=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $2}' | awk '{print substr($0,length,1)}')
