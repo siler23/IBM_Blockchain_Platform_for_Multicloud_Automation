@@ -13,7 +13,7 @@ printf "
 }
 
 TEAM_NUMBER=${TEAM_NUMBER:-${1}}
-PREFIX=${PREFIX:-${1}}
+PREFIX="${PREFIX:-${1}}"
 
 if [ -z ${TEAM_NUMBER} ]; then
 	echo -e "\nError: Number of teams not set !!!\n"
@@ -21,7 +21,7 @@ if [ -z ${TEAM_NUMBER} ]; then
 	exit 1
 fi
 
-if [ -z ${PREFIX} ]; then
+if [ -z "${PREFIX}" ]; then
 	echo -e "\nError: Prefix name for deployment not set !!!\n"
 	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./cleanup.sh"
 	exit 1
@@ -40,9 +40,9 @@ do
         export team="team${i}"
     fi
     set -x
-    HELM_NAME=${PREFIX}-${team}-ibp-console
-    helm delete ${HELM_NAME} --purge --tls 
-    kubectl delete clusterrolebinding ${PREFIX}-${team}-ibp-crd
+    HELM_NAME="${PREFIX}-${team}-ibp-console"
+    helm delete "${HELM_NAME}" --purge --tls 
+    kubectl delete clusterrolebinding "${PREFIX}-${team}-ibp-crd"
     set +x
 done 
 

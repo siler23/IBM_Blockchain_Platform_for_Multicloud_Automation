@@ -6,7 +6,7 @@ This repository contains automation scripts to create new namespaces with the ne
 
 In order to accomplish the above stated tasks there are 4 scripts:
 
-1. `LabSetup.sh` contains the initial variables and is the start script to execute with options depending on your needs described below in `Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of charts you desire`.
+1. `Redbook_Blockchain_Setup.sh` contains the initial variables and is the start script to execute with options depending on your needs described below in `Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of charts you desire`.
 
 2. `NamespaceSetup.sh` contains the logic to setup namespaces with necessary credentials based on clusterroles in this repo. Apply with `kubectl apply -f` as mentioned in the **Pre-reqs** section. It also gets the values necessary values for the optools helm chart. For example, it finds first available ports for each chart and hands them out to helm releases in sequential order.
 
@@ -80,11 +80,25 @@ Server: &version.Version{SemVer:"v2.9.1+icp", GitCommit:"8ddf4db6a545dc609539ad8
 
 ## Login and Configuration
 
-#### Login to your ICP cluster
+### Login to your ICP cluster
 
 ```
 cloudctl login -a https://mycluster.icp:8443 -n default
 ```
+
+### Troubleshooting 
+
+#### Troubleshooting cannot connect error
+
+1. Check to make sure vpn is running, if applicable
+
+2. Check hostname is correct
+
+3. Check that hostname maps to the correct IP in /etc/hosts file with `sudo cat /etc/hosts`. If not add hostname/ip mapping to /etc/hosts with:
+
+   ```
+   echo "192.168.22.81   wsc-ibp-icp-cluster.icp" | sudo tee -a /etc/hosts
+   ```
 
 #### Troubleshooting x509 error on Login to your ICP Cluster (ONLY If above step [`cloudctl login`] failed)
 
@@ -114,49 +128,73 @@ cloudctl login -a https://mycluster.icp:8443 -n default
 
 You should now find success. If you don't please troubleshoot further before progressing with a deploy as you will be setting yourself up for failure / wasting time.
 
-#### If you don't already have a local helm repo mirror, please configure one
+#### Troubleshooting ProxyIP issue 
+
+Make sure you can get the ProxyIP with
+
+```
+kubectl get nodes -l proxy -o jsonpath='{.items[0].metadata.labels.kubernetes\.io\/hostname}' && echo
+```
+
+You should get an IP output like: `192.52.32.94` which you can use for the PROXY_IP value when running the script.
+
+If not, then use an IP that your cluster nodePorts are available from for the PROXY_IP and run script with PROXY_IP entered:
+
+```
+TEAM_NUMBER=1 PREFIX=garrett PROXY_IP=192.52.32.94 ./Redbook_Blockchain_Setup.sh
+```
+
+### If you don't already have a local helm repo mirror, please configure one
 
 ```
 helm repo add blockchain-charts https://mycluster.icp:8443/helm-repo/charts
 helm repo update
 ```
 
-## Deploy the Optools Chart, creating a namespace for each deployment with the number of charts you desire
+#### Directly enter your console IP to use in the script
 
 ```
-TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./LabSetup.sh
+kubectl get nodes -l proxy -o jsonpath='{.items[0].metadata.labels.kubernetes\.io\/hostname}' && echo
+```
+
+You should get an IP output like: `192.52.32.94` which you can use for the PROXY_IP value when running the script
+
+## Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of consoles you desire
+
+```
+TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh
 ```
 
 For example, to create `1` instance with PREFIX of `garrett` use:
 
 ```
-TEAM_NUMBER=1 PREFIX=garrett ./LabSetup.sh
+TEAM_NUMBER=1 PREFIX=garrett ./Redbook_Blockchain_Setup.sh
 ```
 
 The prefix makes it so different users can coexist. Please check to make sure you prefix isn't being used by a namespace yet with `kubectl get ns | grep prefix` where prefix is the name of your prefix.
 
-** If you wish to start off midway through setup due to a snag, use START_NUMBER=x where x is the team you wish to start with **
+**If you wish to start off midway through setup due to add additional consoles (or do to a snag), use START_NUMBER=x where x is the team you wish to start with**
 
 For example, to set up team06 to team10 use:
 
 ```
-TEAM_NUMBER=11 PREFIX=garrett START_NUMBER=6 ./LabSetup.sh
+TEAM_NUMBER=11 PREFIX=garrett START_NUMBER=6 ./Redbook_Blockchain_Setup.sh
 ```
 
 **Default helm repo is *blockchain-charts*. If your icp mirror is named something else (i.e. IloveBeingDifferent)**
 
 ```
 helm repo update 
-TEAM_NUMBER=5 PREFIX=garrett HELM_REPO=IloveBeingDifferent ./LabSetup.sh
+TEAM_NUMBER=5 PREFIX=garrett HELM_REPO=IloveBeingDifferent ./Redbook_Blockchain_Setup.sh
 ```
 
 **Default is using IBM Z (s390x). If you wish to use x86**
 
 ```
-   TEAM_NUMBER=5 PREFIX=garrett ARCH=amd64 ./LabSetup.sh
+   TEAM_NUMBER=5 PREFIX=garrett ARCH=amd64 ./Redbook_Blockchain_Setup.sh
 ```
 
-**FYI**: *You can adjust other values in the same way for the other values set in `LabSetup.sh` as necessary. I have just listed the one I believe will be the most common above.*
+**FYI**: *You can adjust other values in the same way for the other values set in `Redbook_Blockchain_Setup.sh` as necessary. I have just listed the one I believe will be the most common above.*
 
 #### Deployment Description and Resource Notes
 
@@ -180,7 +218,7 @@ https://192.168.22.81:30009
 ## Recommended Access After Deployment
 **You can set your team and then run the following command echo command below to get these details for a given team.**
 
-where team00 is your team and `garrett` is your PREFIX in the command `TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./LabSetup.sh`.
+where team00 is your team and `garrett` is your PREFIX in the command `TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh`.
 
 ```
 team=team00 PREFIX=garrett
@@ -220,11 +258,11 @@ TEAM_NUMBER=11 PREFIX=garrett PRESTART_NUMBER=6 ./cleanupNamespaces.sh
 ```
 
 ## Notes
-This script uses the docker credentials for the namespace that IBP was loaded to as set by `DOCKER_NAMESPACE` in LabSetup.sh. While theoretically you can set the number of teams as high as you want, there is of course a limit in terms of cluster capacity at a certain point.
+This script uses the docker credentials for the namespace that IBP was loaded to as set by `DOCKER_NAMESPACE` in Redbook_Blockchain_Setup.sh. While theoretically you can set the number of teams as high as you want, there is of course a limit in terms of cluster capacity at a certain point.
 
 This script has been tested up to 15 namespaces / optools deploys. One of these deploys was then successfully tested with e2e deployment (i.e. deploy 2CAs, with 1 peer, 1 orderer, create/join channel, install/instantiate/invoke smart contract).
 
-A run like `TEAM_NUMBER=15 PREFIX=garrett ./LabSetup.sh` should end as follows with the number of instances setup depending on the number you set:
+A run like `TEAM_NUMBER=15 PREFIX=garrett ./Redbook_Blockchain_Setup.sh` should end as follows with the number of instances setup depending on the number you set:
 ```
 @@@@@@@@  @@@  @@@  @@@  @@@   @@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@   
 @@@@@@@@  @@@  @@@@ @@@  @@@  @@@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@@  

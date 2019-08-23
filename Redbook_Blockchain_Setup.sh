@@ -36,6 +36,9 @@ printf '
 start_time=$(date +%s)
 BlockchainSquad
 
+# Set admin email if want one admin email (username) for all console deployments rather than different team usenames.
+export ADMIN_EMAIL=${ADMIN_EMAIL:-""}
+
 # Prefix to use automation for lab and non-lab purposes. 
 # Make user enter prefix to prevent confusion
 export PREFIX=${PREFIX:-""}
@@ -89,7 +92,7 @@ export IBP_CLUSTERROLE=${IBP_CLUSTERROLE:-"ibm-blockchain-platform-clusterrole"}
 export CRD_CLUSTERROLE=${CRD_CLUSTERROLE:-"crd-clusterrole"}
 
 # Clusterrole to give access to privileged psp
-export PRIVILEGED_CLUSTERROLE=${PRIVILEGED_CLUSTERROLE:-"ibm-privileged-clusterrole"}
+export PSP_CLUSTERROLE=${PSP_CLUSTERROLE:-"ibm-blockchain-platform-psp"}
 
 # Name of new service account to be created in each namespace to dole out extra permissions
 export SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-"ibp"}

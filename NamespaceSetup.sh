@@ -1,20 +1,21 @@
 #!/bin/bash -e
 
 # Throw error if PROXY_IP not set by script
-if [ -z ${PROXY_IP} ]; then
-	echo -e "\nError: Proxy IP is not set !!!\n"
+if [ -z "${PROXY_IP}" ]; then
+	echo -e "\nError: Proxy IP is not set !!! Please enter it manually with the following usage pattern. \n"
+    echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> PROXY_IP=<proxy_ip> ./Redbook_Blockchain_Setup.sh"
     exit 1
 fi
 
 if [ -z ${TEAM_NUMBER} ]; then
 	echo -e "\nError: Number of teams not set !!!\n"
-	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./LabSetup.sh"
+	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh"
 	exit 1
 fi
 
-if [ -z ${PREFIX} ]; then
+if [ -z "${PREFIX}" ]; then
 	echo -e "\nError: Prefix name for deployment not set !!!\n"
-	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./LabSetup.sh"
+	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh"
 	exit 1
 fi
 
@@ -43,22 +44,28 @@ do
 
     echo "Setting up namespace for ${team}"
     export NAME="${PREFIX}-${team}-ibp-console"
-    export EMAIL="${team}@ibm.com"
+    
+    # If admin email entered use this for all console deployments, else use individual team emails. 
+    if [ -z "${ADMIN_EMAIL}" ]; then
+        export EMAIL="${team}@ibm.com"
+    else
+        export EMAIL="${ADMIN_EMAIL}"
+    fi
     export NAMESPACE="${PREFIX}-${team}"
     export UI_SECRET="${team}-ibp-ui-secret"
     export INITIAL_PASSWORD="${team}pw"
     export DOCKER_SECRET="${team}-icp-docker-registry"
     
     set -x
-    kubectl create ns $NAMESPACE
-    kubectl config set-context --current --namespace=$NAMESPACE
-    kubectl create sa ${SERVICE_ACCOUNT_NAME}
-    kubectl create secret generic ${team}-icp-docker-registry --from-literal=.dockerconfigjson=$(kubectl get secret -n ${DOCKER_NAMESPACE} sa-${DOCKER_NAMESPACE} -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode) --type=kubernetes.io/dockerconfigjson
-    kubectl create clusterrolebinding ${PREFIX}-${team}-ibp-crd --serviceaccount ${NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=${CRD_CLUSTERROLE}
-    kubectl create rolebinding ibp-admin --serviceaccount ${NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=${IBP_CLUSTERROLE}
-    kubectl create rolebinding privileged --group system:serviceaccounts:${NAMESPACE} --clusterrole=${PRIVILEGED_CLUSTERROLE}
-    kubectl create secret generic ${UI_SECRET} --from-literal=password=${INITIAL_PASSWORD}
-    
+    kubectl create ns "${NAMESPACE}"
+    kubectl config set-context --current --namespace="$NAMESPACE"
+    kubectl create secret generic "${UI_SECRET}" --from-literal=password="${INITIAL_PASSWORD}"
+    kubectl create sa "${SERVICE_ACCOUNT_NAME}"
+    kubectl create rolebinding ibp-admin --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${IBP_CLUSTERROLE}"
+    kubectl create rolebinding ibp-psp --group system:serviceaccounts:"${NAMESPACE}" --clusterrole="${PSP_CLUSTERROLE}"
+    kubectl create clusterrolebinding "${NAMESPACE}"-ibp-crd --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${CRD_CLUSTERROLE}"
+    kubectl create secret generic blockchain-docker-registry --from-literal=.dockerconfigjson=$(kubectl get secret -n "${DOCKER_NAMESPACE}" sa-"${DOCKER_NAMESPACE}" -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode) --type=kubernetes.io/dockerconfigjson
+
     set +x
     # Get used ports. Run this every time ports are going to be given to prevent port collision 
     # if someone were to get a port while script was running. Store these ports in oldPorts.txt file.
@@ -69,23 +76,19 @@ do
     counter=0
     while IFS= read -r port
     do
-        if [[ counter -ge 2 ]]
-        then
-            break;
-        fi
-    while [[ $nextNodePort -le $port ]]
-    do
-        if [[ $nextNodePort -ne $port ]]
-        then 
-            available_ports+=($nextNodePort)
-            counter=$(( counter + 1 ))
-        fi
-        nextNodePort=$(( nextNodePort + 1 ))
-        if [[ ${counter} -ge 2 ]]
-        then
-            break;
-        fi
-    done
+        while [[ $nextNodePort -le $port ]]
+        do
+            if [[ $nextNodePort -ne $port ]]
+            then 
+                available_ports+=($nextNodePort)
+                counter=$(( counter + 1 ))
+            fi
+            nextNodePort=$(( nextNodePort + 1 ))
+            if [[ ${counter} -ge 2 ]]
+            then
+                break;
+            fi
+        done
     done < "$oldPorts" 
 
     optools_number=$(( (${i}-${START_NUMBER}) * 2 ))
@@ -140,10 +143,10 @@ do
     do 
         HELM_NAME=${PREFIX}-${team}-ibp-console
         NAMESPACE="${PREFIX}-${team}"
-        POD_NAME=$(kubectl get pod -n ${NAMESPACE} | grep "${HELM_NAME}" | awk '{print $1}')
-        POD_STATUS=$(kubectl get pods -n ${NAMESPACE} | grep "${HELM_NAME}" | awk '{print $3}')
-        TOTAL_CONTAINERS=$(kubectl get pod -n ${NAMESPACE} | grep "${HELM_NAME}" | awk '{print $2}' | awk '{print substr($0,length,1)}')
-        IS_READY=$(kubectl get pods -n ${NAMESPACE} | grep "${HELM_NAME}" | awk '{print $2}')
+        POD_NAME=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $1}')
+        POD_STATUS=$(kubectl get pods -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $3}')
+        TOTAL_CONTAINERS=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $2}' | awk '{print substr($0,length,1)}')
+        IS_READY=$(kubectl get pods -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $2}')
         if [ "${IS_READY}" == "${TOTAL_CONTAINERS}/${TOTAL_CONTAINERS}" ]
         then
             break;
