@@ -3,19 +3,19 @@
 # Throw error if PROXY_IP not set by script
 if [ -z "${PROXY_IP}" ]; then
 	echo -e "\nError: Proxy IP is not set !!! Please enter it manually with the following usage pattern. \n"
-    echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> PROXY_IP=<proxy_ip> ./Redbook_Blockchain_Setup.sh"
+    echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> PROXY_IP=<proxy_ip> ./Blockchain_Setup.sh"
     exit 1
 fi
 
 if [ -z ${TEAM_NUMBER} ]; then
 	echo -e "\nError: Number of teams not set !!!\n"
-	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh"
+	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Blockchain_Setup.sh"
 	exit 1
 fi
 
 if [ -z "${PREFIX}" ]; then
 	echo -e "\nError: Prefix name for deployment not set !!!\n"
-	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh"
+	echo -e "Usage:\n\tTEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Blockchain_Setup.sh"
 	exit 1
 fi
 

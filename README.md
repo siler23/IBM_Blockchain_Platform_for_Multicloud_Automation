@@ -6,7 +6,7 @@ This repository contains automation scripts to create new namespaces with the ne
 
 In order to accomplish the above stated tasks there are 4 scripts:
 
-1. `Redbook_Blockchain_Setup.sh` contains the initial variables and is the start script to execute with options depending on your needs described below in `Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of charts you desire`.
+1. `Blockchain_Setup.sh` contains the initial variables and is the start script to execute with options depending on your needs described below in `Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of charts you desire`.
 
 2. `NamespaceSetup.sh` contains the logic to setup namespaces with necessary credentials based on clusterroles in this repo. Apply with `kubectl apply -f` as mentioned in the **Pre-reqs** section. It also gets the values necessary values for the IBM Blockchain Platform for Multicloud helm chart. For example, it finds first available ports for each chart and hands them out to helm releases in sequential order.
 
@@ -134,13 +134,13 @@ helm repo update
 ## Deploy the IBM Blockchain Platform for Multicloud Helm Chart, creating a namespace for each deployment with the number of consoles you desire
 
 ```
-TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Blockchain_Setup.sh
 ```
 
 For example, to create `1` instance with PREFIX of `garrett` use:
 
 ```
-TEAM_NUMBER=1 PREFIX=garrett ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=1 PREFIX=garrett ./Blockchain_Setup.sh
 ```
 
 The prefix makes it so different users can coexist. Please check to make sure you prefix isn't being used by a namespace yet with `kubectl get ns | grep prefix` where prefix is the name of your prefix.
@@ -151,13 +151,13 @@ The prefix makes it so different users can coexist. Please check to make sure yo
 For example, to set up the admin email for 5 consoles use the following setup:
 
 ```
-TEAM_NUMBER=5 PREFIX=<chosen_prefix> ADMIN_EMAIL="<admin_email>" ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=5 PREFIX=<chosen_prefix> ADMIN_EMAIL="<admin_email>" ./Blockchain_Setup.sh
 ```
 
 For example:
 
 ```
-TEAM_NUMBER=5 PREFIX=email-time ADMIN_EMAIL="siler23@ibm.com" ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=5 PREFIX=email-time ADMIN_EMAIL="siler23@ibm.com" ./Blockchain_Setup.sh
 ```
 
 **If you wish to start off midway through setup due to add additional consoles (or do to a snag), use START_NUMBER=x where x is the team you wish to start with**
@@ -165,23 +165,23 @@ TEAM_NUMBER=5 PREFIX=email-time ADMIN_EMAIL="siler23@ibm.com" ./Redbook_Blockcha
 For example, to set up team06 to team10 use:
 
 ```
-TEAM_NUMBER=11 PREFIX=garrett START_NUMBER=6 ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=11 PREFIX=garrett START_NUMBER=6 ./Blockchain_Setup.sh
 ```
 
 **Default helm repo is *blockchain-charts*. If your icp mirror is named something else (i.e. IloveBeingDifferent)**
 
 ```
 helm repo update 
-TEAM_NUMBER=5 PREFIX=garrett HELM_REPO=IloveBeingDifferent ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=5 PREFIX=garrett HELM_REPO=IloveBeingDifferent ./Blockchain_Setup.sh
 ```
 
 **Default is using IBM Z (s390x). If you wish to use x86**
 
 ```
-   TEAM_NUMBER=5 PREFIX=garrett ARCH=amd64 ./Redbook_Blockchain_Setup.sh
+   TEAM_NUMBER=5 PREFIX=garrett ARCH=amd64 ./Blockchain_Setup.sh
 ```
 
-**FYI**: *You can adjust other values in the same way for the other values set in `Redbook_Blockchain_Setup.sh` as necessary. I have just listed the one I believe will be the most common above.*
+**FYI**: *You can adjust other values in the same way for the other values set in `Blockchain_Setup.sh` as necessary. I have just listed the one I believe will be the most common above.*
 
 ### Troubleshooting ProxyIP issue 
 
@@ -196,7 +196,7 @@ You should get an IP output like: `192.52.32.94` which you can use for the PROXY
 If not, then use an IP that your cluster nodePorts are available from for the PROXY_IP and run script with PROXY_IP entered:
 
 ```
-TEAM_NUMBER=1 PREFIX=garrett PROXY_IP=192.52.32.94 ./Redbook_Blockchain_Setup.sh
+TEAM_NUMBER=1 PREFIX=garrett PROXY_IP=192.52.32.94 ./Blockchain_Setup.sh
 ```
 
 ### Deployment Description and Resource Notes
@@ -221,7 +221,7 @@ https://192.168.22.81:30009
 ## Recommended Access After Deployment
 **You can set your team and then run the following command echo command below to get these details for a given team.**
 
-where team00 is your team and `garrett` is your PREFIX in the command `TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Redbook_Blockchain_Setup.sh`.
+where team00 is your team and `garrett` is your PREFIX in the command `TEAM_NUMBER=<number_of_teams> PREFIX=<chosen_prefix> ./Blockchain_Setup.sh`.
 
 ```
 team=team00 PREFIX=garrett
@@ -261,11 +261,11 @@ TEAM_NUMBER=11 PREFIX=garrett PRESTART_NUMBER=6 ./cleanupNamespaces.sh
 ```
 
 ## Notes
-This script uses the docker credentials for the namespace that IBP was loaded to as set by `DOCKER_NAMESPACE` in Redbook_Blockchain_Setup.sh. While theoretically you can set the number of teams as high as you want, there is of course a limit in terms of cluster capacity at a certain point.
+This script uses the docker credentials for the namespace that IBP was loaded to as set by `DOCKER_NAMESPACE` in Blockchain_Setup.sh. While theoretically you can set the number of teams as high as you want, there is of course a limit in terms of cluster capacity at a certain point.
 
 This script has been tested up to 15 namespaces / IBM Blockchain Platform for Multicloud deploys. One of these deploys was then successfully tested with e2e deployment (i.e. deploy 2CAs, with 1 peer, 1 orderer, create/join channel, install/instantiate/invoke smart contract).
 
-A run like `TEAM_NUMBER=15 PREFIX=garrett ./Redbook_Blockchain_Setup.sh` should end as follows with the number of instances setup depending on the number you set:
+A run like `TEAM_NUMBER=15 PREFIX=garrett ./Blockchain_Setup.sh` should end as follows with the number of instances setup depending on the number you set:
 ```
 @@@@@@@@  @@@  @@@  @@@  @@@   @@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@   
 @@@@@@@@  @@@  @@@@ @@@  @@@  @@@@@@@   @@@  @@@  @@@@@@@@  @@@@@@@@  
