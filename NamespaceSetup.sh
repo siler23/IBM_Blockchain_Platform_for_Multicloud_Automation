@@ -65,11 +65,11 @@ do
         export EMAIL="${ADMIN_EMAIL}"
     fi
 
-    # If default password entered use this for all console deployments, else use random individual team passwords. 
+    # If default password not entered, use random individual team passwords, else use default password for alll deployments.
     if [ -z "${DEFAULT_PASSWORD}" ]; then
-        export INITIAL_PASSWORD="${DEFAULT_PASSWORD}"
-    else
         export INITIAL_PASSWORD="team${team}pw${RANDOM}"
+    else
+        export INITIAL_PASSWORD="${DEFAULT_PASSWORD}"
     fi
 
     export NAMESPACE="${PREFIX}-${team}"
