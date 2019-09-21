@@ -17,10 +17,10 @@ spec:
     # a locally namespaced Issuer)
     kind: ClusterIssuer
   commonName: ${CONSOLE_HOSTNAME}
- #dnsNames:
+  dnsNames:
    # one or more fully-qualified domain names
    # can be defined here
- #- ${CONSOLE_HOSTNAME}
+  - ${CONSOLE_HOSTNAME}
 EOF
 
 kubectl apply -f ${HELM_NAME}-tls-cert.yaml
