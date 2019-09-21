@@ -43,6 +43,7 @@ do
     HELM_NAME="${PREFIX}-${team}-ibp-console"
     helm delete "${HELM_NAME}" --purge --tls 
     kubectl delete clusterrolebinding "${PREFIX}-${team}-ibp-crd"
+    rm -f "${HELM_NAME}"-tls-cert.yaml
     set +x
 done 
 
@@ -60,9 +61,6 @@ do
     set +x
 done
 
-echo "Cleaning up files"
-rm -rf "portList.txt" "*-tls-cert.yaml"
-echo "Files Cleaned Up"
 echo
 runtime=$(($(date +%s)-start_time))
 Cleanup
