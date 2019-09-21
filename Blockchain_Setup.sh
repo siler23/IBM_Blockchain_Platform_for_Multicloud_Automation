@@ -71,7 +71,7 @@ export CERTS=${CERTS:-""}
 
 # Path to TLS certificate for blockchain console (Only used if CERTS=byo)
 # Default is file named cert.pem in directory of script (Only used if CERTS=byo)
-export TLS_CERT=$(TLS_CERT:-"cert.pem")
+export TLS_CERT=${TLS_CERT:-"cert.pem"}
 
 # Path to TLS key for blockchain console (Only used if CERTS=byo
 # Default is file named key.pem in directory of script (Only used if CERTS=byo)
