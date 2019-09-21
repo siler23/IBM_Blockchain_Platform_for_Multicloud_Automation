@@ -19,6 +19,22 @@ if [ -z "${PREFIX}" ]; then
 	exit 1
 fi
 
+# If CERTS is byo check if TLS_CERT and TLS_KEY files exist or throw error
+if [ "${CERTS}" = "byo" ]; then
+    if [ ! -f "${TLS_CERT}" ]
+    then
+        echo "You specified CERTS = byo. This means you need to provide a relevant certificate and key file." 
+        echo "The TLS certificate at the path specified in variable TLS_CERT (${TLS_CERT}) does not exist"
+        exit 1
+    fi
+    if [ ! -f "${TLS_KEY}" ]
+    then
+        echo "You specified CERTS = byo. This means you need to provide a relevant certificate and key file." 
+        echo "The TLS key at the path specified in variable TLS_KEY (${TLS_KEY}) does not exist"
+        exit 1
+    fi
+fi
+
 # Make an array of available ports for helm deploy and name a file
 # to hold oldPorts for the lab
 declare -a available_ports
@@ -37,28 +53,45 @@ for (( i=${START_NUMBER}; i < ${TEAM_NUMBER}; i++ ))
 do
     if [ ${i} -lt 10 ]
     then
-        export team="team0${i}"
+        export team="0${i}"
     else
-        export team="team${i}"
+        export team="${i}"
     fi
-
-    echo "Setting up namespace for ${team}"
-    export NAME="${PREFIX}-${team}-ibp-console"
     
     # If admin email entered use this for all console deployments, else use individual team emails. 
     if [ -z "${ADMIN_EMAIL}" ]; then
-        export EMAIL="${team}@ibm.com"
+        export EMAIL="team${team}@ibm.com"
     else
         export EMAIL="${ADMIN_EMAIL}"
     fi
+
+    # If default password entered use this for all console deployments, else use random individual team passwords. 
+    if [ -z "${DEFAULT_PASSWORD}" ]; then
+        export INITIAL_PASSWORD="${DEFAULT_PASSWORD}"
+    else
+        export INITIAL_PASSWORD="team${team}pw${RANDOM}"
+    fi
+
     export NAMESPACE="${PREFIX}-${team}"
-    export UI_SECRET="${team}-ibp-ui-secret"
-    export INITIAL_PASSWORD="${team}pw${RANDOM}"
+    export UI_SECRET="ibp-ui-secret"
     export DOCKER_SECRET="blockchain-docker-registry"
+    # TLS_SECRET only used if CERTS=byo or CERTS=icp
+    export TLS_SECRET="blockchain-tls"
+    export HELM_NAME="${NAMESPACE}-ibp-console"
     
+    echo "Setting up namespace ${NAMESPACE}"
+
     set -x
     kubectl create ns "${NAMESPACE}"
     kubectl config set-context --current --namespace="$NAMESPACE"
+    if [ "${CERTS}" = "byo" ]; then
+        kubectl create secret tls "${TLS_SECRET}" --cert="${TLS_CERT}" --key="${TLS_KEY}" 
+    elif [ "${CERTS}" = "icp" ]; then
+        ./create_icp_certificate.sh
+    else
+        # TLS_SECRET only used if CERTS=byo or CERTS=icp
+        export TLS_SECRET=""
+    fi
     kubectl create secret generic "${UI_SECRET}" --from-literal=password="${INITIAL_PASSWORD}"
     kubectl create sa "${SERVICE_ACCOUNT_NAME}"
     kubectl create rolebinding ibp-admin --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${IBP_CLUSTERROLE}"
@@ -100,16 +133,16 @@ do
     # Deploy helm chart by calling create_optools.sh script with variables set
     ./create_optools.sh
     
-    echo "****************   TEAM${i}  ****************" >> portList.txt
-    echo "${team} optools URL: https://${PROXY_IP}:${OPTOOLS_PORT}" >> portList.txt
-    echo "${team} proxy URL: https://${PROXY_IP}:${PROXY_PORT}" >> portList.txt
-    echo "${team} USERNAME: ${EMAIL}" >> portList.txt
-    echo "${team} PASSWORD: ${INITIAL_PASSWORD}" >> portList.txt
+    echo "****************   ${HELM_NAME}  ****************" >> portList.txt
+    echo "${HELM_NAME} optools URL: https://${CONSOLE_HOSTNAME}:${OPTOOLS_PORT}" >> portList.txt
+    echo "${HELM_NAME} proxy URL: https://${CONSOLE_HOSTNAME}:${PROXY_PORT}" >> portList.txt
+    echo "${HELM_NAME} USERNAME: ${EMAIL}" >> portList.txt
+    echo "${HELM_NAME} PASSWORD: ${INITIAL_PASSWORD}" >> portList.txt
     echo >> portList.txt
     
     if [ $? != 0 ]
     then
-        echo "Optools Deployment $i failed"
+        echo "Optools Deployment ${team} failed"
         exit 1
     fi
     sleep 3
@@ -128,21 +161,21 @@ do
     SECONDS=0
     if [ ${i} -lt 10 ]
     then
-        export team="team0${i}"
+        export team="0${i}"
     else
-        export team="team${i}"
+        export team="${i}"
     fi
     optools_number=$(( ($i-${START_NUMBER}) * 2 ))
     proxy_number=$(( ($i-${START_NUMBER}) * 2 + 1 ))
 
-    echo "Checking deploy for ${team}"
+    NAMESPACE="${PREFIX}-${team}"
+    HELM_NAME="${NAMESPACE}"-ibp-console
+    echo "Checking deploy for ${HELM_NAME}"
 
     # Check for all pods to come up successfully in all namespaces and add each of their 
     # exposed ports to the list when they do.
     while (( $SECONDS < 600 ));
     do 
-        NAMESPACE="${PREFIX}-${team}"
-        HELM_NAME="${NAMESPACE}"-ibp-console
         POD_NAME=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $1}')
         POD_STATUS=$(kubectl get pods -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $3}')
         TOTAL_CONTAINERS=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $2}' | awk '{print substr($0,length,1)}')

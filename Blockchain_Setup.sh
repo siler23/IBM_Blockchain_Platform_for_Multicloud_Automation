@@ -55,6 +55,28 @@ export PROD_VERSION=${PROD_VERSION:-"2.0.0"}
 # Proxy IP of Cluster
 export PROXY_IP=${PROXY_IP:-"$(kubectl get nodes -l proxy -o jsonpath='{.items[0].metadata.labels.kubernetes\.io\/hostname}')"}
 
+# Console Hostname (Defaults to same value as PROXY_IP)
+export CONSOLE_HOSTNAME=${CONSOLE_HOSTNAME:-"${PROXY_IP}"}
+
+# Set resources to prod limits if true (Default is false)
+export PROD=${PROD:-"false"}
+
+# 3 options 
+# 1. leave blank for self-signed CERTS. 
+export CERTS=${CERTS:-""}
+# 2. Set to icp to use icp-cert manager to create certs using icp ca as ca.
+#export CERTS=${CERTS:-"icp"}
+# 3. set to byo for bring your own certs and set TLS_CERT and TLS_KEY to your certs
+#export CERTS=${CERTS:-"byo"}
+
+# Path to TLS certificate for blockchain console (Only used if CERTS=byo)
+# Default is file named cert.pem in directory of script (Only used if CERTS=byo)
+export TLS_CERT=$(TLS_CERT:-"cert.pem")
+
+# Path to TLS key for blockchain console (Only used if CERTS=byo
+# Default is file named key.pem in directory of script (Only used if CERTS=byo)
+export TLS_KEY=${TLS_KEY:-"key.pem"}
+
 # Use multi-arch images
 export MULTIARCH=${MULTIARCH:-"true"}
 

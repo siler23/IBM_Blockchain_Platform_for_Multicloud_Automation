@@ -35,9 +35,9 @@ for (( i = ${START_NUMBER}; i < ${TEAM_NUMBER}; i++ ))
 do
     if [ ${i} -lt 10 ]
     then
-        export team="team0${i}"
+        export team="0${i}"
     else
-        export team="team${i}"
+        export team="${i}"
     fi
     set -x
     HELM_NAME="${PREFIX}-${team}-ibp-console"
@@ -50,9 +50,9 @@ for (( i = ${START_NUMBER}; i < ${TEAM_NUMBER}; i++ ))
 do
     if [ ${i} -lt 10 ]
     then
-        export team="team0${i}"
+        export team="0${i}"
     else
-        export team="team${i}"
+        export team="${i}"
     fi
     set -x
     NAMESPACE="${PREFIX}-${team}"
@@ -60,6 +60,9 @@ do
     set +x
 done
 
+echo "Cleaning up files"
+rm -rf "portList.txt" "*-tls-cert.yaml"
+echo "Files Cleaned Up"
 echo
 runtime=$(($(date +%s)-start_time))
 Cleanup

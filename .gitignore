@@ -1,3 +1,4 @@
 ## Ignore the following files
 
 portList.txt
+*-tls-cert.yaml
