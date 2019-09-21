@@ -36,8 +36,11 @@ printf '
 start_time=$(date +%s)
 BlockchainSquad
 
-# Set admin email if want one admin email (username) for all console deployments rather than different team usenames.
+# Set admin email if want one admin email (username) for all console deployments rather than different team usernames.
 export ADMIN_EMAIL=${ADMIN_EMAIL:-""}
+
+# Set default password if you want one default password for all console deployments rather than different random team passwords.
+export DEFAULT_PASSWORD=${DEFAULT_PASSWORD:-""}
 
 # Prefix to use automation for lab and non-lab purposes. 
 # Make user enter prefix to prevent confusion
