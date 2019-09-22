@@ -43,7 +43,6 @@ do
     HELM_NAME="${PREFIX}-${team}-ibp-console"
     helm delete "${HELM_NAME}" --purge --tls 
     kubectl delete clusterrolebinding "${PREFIX}-${team}-ibp-crd"
-    rm -f "${HELM_NAME}"-tls-cert.yaml
     set +x
 done 
 

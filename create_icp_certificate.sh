@@ -24,3 +24,5 @@ spec:
 EOF
 
 kubectl apply -f ${HELM_NAME}-tls-cert.yaml
+# Cleanup after applying
+rm "${HELM_NAME}"-tls-cert.yaml

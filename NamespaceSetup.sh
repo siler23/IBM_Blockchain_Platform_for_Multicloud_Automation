@@ -99,7 +99,7 @@ do
     kubectl create clusterrolebinding "${NAMESPACE}"-ibp-crd --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${CRD_CLUSTERROLE}"
     kubectl create secret generic blockchain-docker-registry --from-literal=.dockerconfigjson=$(kubectl get secret -n "${DOCKER_NAMESPACE}" sa-"${DOCKER_NAMESPACE}" -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode) --type=kubernetes.io/dockerconfigjson
 
-    #set +x
+    set +x
     # Get used ports. Run this every time ports are going to be given to prevent port collision 
     # if someone were to get a port while script was running. Store these ports in text file set in variable oldPorts. 
 
@@ -129,7 +129,6 @@ do
 
     export OPTOOLS_PORT=${available_ports[$optools_number]}
     export PROXY_PORT=${available_ports[$proxy_number]}
-    set +x
     # Deploy helm chart by calling create_optools.sh script with variables set
     ./create_optools.sh
     
@@ -196,4 +195,4 @@ do
 done
 
 # Remove oldPorts text file
-rm -f "${oldPorts}"
+rm "${oldPorts}"
