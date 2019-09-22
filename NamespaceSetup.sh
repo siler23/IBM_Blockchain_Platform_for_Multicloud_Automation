@@ -38,7 +38,7 @@ fi
 # Make an array of available ports for helm deploy and name a file
 # to hold oldPorts for the lab
 declare -a available_ports
-export oldPorts="./oldPorts.txt"
+export oldPorts="oldPorts.txt"
 
 # Create a list of all ports used so instructors can reference this later. 
 # Overwrite existing file when First team details created.
@@ -99,12 +99,12 @@ do
     kubectl create clusterrolebinding "${NAMESPACE}"-ibp-crd --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${CRD_CLUSTERROLE}"
     kubectl create secret generic blockchain-docker-registry --from-literal=.dockerconfigjson=$(kubectl get secret -n "${DOCKER_NAMESPACE}" sa-"${DOCKER_NAMESPACE}" -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode) --type=kubernetes.io/dockerconfigjson
 
-    set +x
+    #set +x
     # Get used ports. Run this every time ports are going to be given to prevent port collision 
-    # if someone were to get a port while script was running. Store these ports in oldPorts.txt file.
+    # if someone were to get a port while script was running. Store these ports in text file set in variable oldPorts. 
 
     # Use 30000 as starter and 32768 as stopper since nodePort range is 30000-32768.
-    kubectl get svc --all-namespaces -o go-template='{{range .items}}{{range.spec.ports}}{{if .nodePort}}{{.nodePort}}{{"\n"}}{{end}}{{end}}{{end}}' | sort > oldPorts.txt && echo "32768" >> oldPorts.txt
+    kubectl get svc --all-namespaces -o go-template='{{range .items}}{{range.spec.ports}}{{if .nodePort}}{{.nodePort}}{{"\n"}}{{end}}{{end}}{{end}}' | sort > "${oldPorts}" && echo "32768" >> "${oldPorts}"
     nextNodePort=30000
     counter=0
     while IFS= read -r port
@@ -119,7 +119,7 @@ do
             nextNodePort=$(( nextNodePort + 1 ))
             if [[ ${counter} -ge 2 ]]
             then
-                break;
+                break 2;
             fi
         done
     done < "$oldPorts" 
@@ -129,7 +129,7 @@ do
 
     export OPTOOLS_PORT=${available_ports[$optools_number]}
     export PROXY_PORT=${available_ports[$proxy_number]}
-
+    set +x
     # Deploy helm chart by calling create_optools.sh script with variables set
     ./create_optools.sh
     
@@ -196,4 +196,4 @@ do
 done
 
 # Remove oldPorts text file
-rm ./oldPorts.txt
+rm -f "${oldPorts}"
