@@ -56,7 +56,7 @@ export HELM_REPO=${HELM_REPO:-"blockchain-charts"}
 export PROD_VERSION=${PROD_VERSION:-"2.0.0"}
 
 # Proxy IP of Cluster
-export PROXY_IP=${PROXY_IP:-"$(kubectl get nodes -l proxy -o jsonpath='{.items[0].metadata.labels.kubernetes\.io\/hostname}')"}
+export PROXY_IP=${PROXY_IP:-"$(kubectl get nodes -l 'proxy=true' -o jsonpath='{.items[0].status.addresses[0].address}')"}
 
 # Console Hostname (Defaults to same value as PROXY_IP)
 export CONSOLE_HOSTNAME=${CONSOLE_HOSTNAME:-"${PROXY_IP}"}
