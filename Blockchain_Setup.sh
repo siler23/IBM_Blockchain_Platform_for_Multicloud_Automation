@@ -36,15 +36,25 @@ printf '
 start_time=$(date +%s)
 BlockchainSquad
 
+# Prefix to use to group resources of one run of automation. 
+# The prefix makes it so different users can coexist.
+# Please check to make sure your prefix isn't being used by a namespace yet with:
+# kubectl get ns | grep prefix where prefix is the name of your prefix. 
+# Make user enter prefix to prevent confusion
+export PREFIX=${PREFIX:-""}
+
+# Number of consoles to have given prefix, make user enter number to prevent confusion
+export TEAM_NUMBER=${TEAM_NUMBER:-""}
+
+# Set START_NUMBER at 0. If necessary users can adjust this. For example, if a deploy gets stopped
+# midway due to a timeout, they can rerun with number they want to start with.
+export START_NUMBER=${START_NUMBER:-"0"}
+
 # Set admin email if want one admin email (username) for all console deployments rather than different team usernames.
 export ADMIN_EMAIL=${ADMIN_EMAIL:-""}
 
 # Set default password if you want one default password for all console deployments rather than different random team passwords.
 export DEFAULT_PASSWORD=${DEFAULT_PASSWORD:-""}
-
-# Prefix to use automation for lab and non-lab purposes. 
-# Make user enter prefix to prevent confusion
-export PREFIX=${PREFIX:-""}
 
 # Set architecture for deployment
 export ARCH=${ARCH:-"s390x"}
@@ -65,7 +75,7 @@ export CONSOLE_HOSTNAME=${CONSOLE_HOSTNAME:-"${PROXY_IP}"}
 export PROD=${PROD:-"false"}
 
 # 3 options 
-# 1. leave blank for self-signed CERTS. 
+# 1. leave blank for self-signed TLS CERTS. 
 export CERTS=${CERTS:-""}
 # 2. Set to icp to use icp-cert manager to create certs using icp ca as ca.
 #export CERTS=${CERTS:-"icp"}
@@ -76,14 +86,14 @@ export CERTS=${CERTS:-""}
 # Default is file named cert.pem in directory of script (Only used if CERTS=byo)
 export TLS_CERT=${TLS_CERT:-"cert.pem"}
 
-# Path to TLS key for blockchain console (Only used if CERTS=byo
+# Path to TLS key for blockchain console (Only used if CERTS=byo)
 # Default is file named key.pem in directory of script (Only used if CERTS=byo)
 export TLS_KEY=${TLS_KEY:-"key.pem"}
 
 # Use multi-arch images
 export MULTIARCH=${MULTIARCH:-"true"}
 
-# Storage class for dynamic provisioning
+# Kubernetes Storage class for dynamic provisioning
 export STORAGE_CLASS=${STORAGE_CLASS:-"managed-nfs-storage"}
 
 # Hostname for ICP Cluster
@@ -101,15 +111,8 @@ export HLF_VERSION=${HLF_VERSION:-"1.4.1"}
 # Version of IBP
 export IBP_VERSION=${IBP_VERSION:-"2.0.0"}
 
-# Number of teams for the lab, make user enter number to prevent confusion
-export TEAM_NUMBER=${TEAM_NUMBER:-""}
-
-# Set START_NUMBER at 0. If necessary users can adjust this. For example, if a deploy gets stopped
-# midway due to a timeout, they can rerun with number they want to start with.
-export START_NUMBER=${START_NUMBER:-"0"}
-
 # Clusterrole set that has necessary resource access for IBP optools helm chart. 
-# In wsc cluster this is ibm-blockchain-platform-clusterrole. The service account will get these
+# Following resources in directory, his is ibm-blockchain-platform-clusterrole. The service account will get these
 #privileges scoped to its namespace in the form of a rolebinding
 export IBP_CLUSTERROLE=${IBP_CLUSTERROLE:-"ibm-blockchain-platform-clusterrole"}
 
