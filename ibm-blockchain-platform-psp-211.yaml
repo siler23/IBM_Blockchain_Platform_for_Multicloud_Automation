@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: ibm-blockchain-platform-psp
+  name: ibm-blockchain-platform-psp-211
 spec:
   hostIPC: false
   hostNetwork: false
@@ -17,6 +17,8 @@ spec:
     rule: RunAsAny
   fsGroup:
     rule: RunAsAny
+  requiredDropCapabilities:
+  - ALL
   allowedCapabilities:
   - NET_BIND_SERVICE
   - CHOWN

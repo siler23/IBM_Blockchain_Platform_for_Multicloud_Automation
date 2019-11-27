@@ -59,12 +59,6 @@ export DEFAULT_PASSWORD=${DEFAULT_PASSWORD:-""}
 # Set architecture for deployment
 export ARCH=${ARCH:-"s390x"}
 
-# Set name of local helm repo used in helm install command
-export HELM_REPO=${HELM_REPO:-"blockchain-charts"}
-
-# Version of helm chart
-export PROD_VERSION=${PROD_VERSION:-"2.0.0"}
-
 # Proxy IP of Cluster
 export PROXY_IP=${PROXY_IP:-"$(kubectl get nodes -l 'proxy=true' -o jsonpath='{.items[0].status.addresses[0].address}')"}
 
@@ -96,41 +90,60 @@ export MULTIARCH=${MULTIARCH:-"true"}
 # Kubernetes Storage class for dynamic provisioning
 export STORAGE_CLASS=${STORAGE_CLASS:-"managed-nfs-storage"}
 
-# Hostname for ICP Cluster
-export CLUSTER_HOSTNAME=${CLUSTER_HOSTNAME:-"mycluster.icp"}
+# Hostname for ICP Cluster if images stored locally 
+export CLUSTER_HOSTNAME=${CLUSTER_HOSTNAME:-""}
 
-# Server address for docker registry where docker images are stored
-export DOCKER_SERVER=${DOCKER_SERVER:-"$CLUSTER_HOSTNAME:8500"}
+# Server address for docker registry where docker images are stored. Use Cluster Hostname if supplied
+if [ -z ${CLUSTER_HOSTNAME} ]; then
+# Need to manually enter DOCKER_USERNAME and Password to create secret from API_KEY if not using local images
+    export DOCKER_USERNAME=${DOCKER_USERNAME:-""}
+    export DOCKER_PASSWORD=${DOCKER_PASSWORD:-""}
+    export DOCKER_SERVER=${DOCKER_SERVER:-"ip-ibp-images-team-docker-remote.artifactory.swg-devops.com"}
+else
+# Using local images with local registry
+    export DOCKER_SERVER=${DOCKER_SERVER:-"$CLUSTER_HOSTNAME:8500"}
+fi
 
 # Namespace where docker images were pushed for the helm chart (where helm chart archive chart was loaded).
-export DOCKER_NAMESPACE=${DOCKER_NAMESPACE:-"blockchain-time"}
+export DOCKER_NAMESPACE=${DOCKER_NAMESPACE:-"cp"}
 
 # Version of HLF, default to 1.4.1 for IBP for Multicloud v2
-export HLF_VERSION=${HLF_VERSION:-"1.4.1"}
+export HLF_VERSION=${HLF_VERSION:-"1.4.3"}
+
+export HLF_VERSION_LONG=${HLF_VERSION_LONG:-"${HLF_VERSION}-0"}
 
 # Version of IBP
-export IBP_VERSION=${IBP_VERSION:-"2.0.0"}
+export IBP_VERSION=${IBP_VERSION:-"2.1.1"}
 
-# Clusterrole set that has necessary resource access for IBP optools helm chart. 
+# Product ID of IBP
+export PRODUCT_ID=${PRODUCT_ID:-"54283fa24f1a4e8589964e6e92626ec4"}
+
+# Version of CouchDB
+export COUCH_VERSION=${COUCH_VERSION:-"2.3.1"}
+
+# Date images cut
+export IMAGE_DATE=${IMAGE_DATE:-"20191108"}
+
+# Clusterrole set that has necessary resource access for IBM Blockchain Platform console and operator. 
 # Following resources in directory, his is ibm-blockchain-platform-clusterrole. The service account will get these
 #privileges scoped to its namespace in the form of a rolebinding
-export IBP_CLUSTERROLE=${IBP_CLUSTERROLE:-"ibm-blockchain-platform-clusterrole"}
+export IBP_CLUSTERROLE=${IBP_CLUSTERROLE:-"ibm-blockchain-platform-clusterrole-211"}
 
 # Clusterrole to give cluster-wide access to create CRD, is bound via clusterrolebinding in script
-export CRD_CLUSTERROLE=${CRD_CLUSTERROLE:-"crd-clusterrole"}
+export CRD_CLUSTERROLE=${CRD_CLUSTERROLE:-"ibm-blockchain-platform-crd-clusterrole-211"}
 
 # Clusterrole to give access to privileged psp
-export PSP_CLUSTERROLE=${PSP_CLUSTERROLE:-"ibm-blockchain-platform-psp-clusterrole"}
+export PSP_CLUSTERROLE=${PSP_CLUSTERROLE:-"ibm-blockchain-platform-psp-clusterrole-211"}
 
 # Name of new service account to be created in each namespace to dole out extra permissions
 export SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-"ibp"}
 
 # Launches namespace setup script
-echo -e "\n\n ---- Creating $TEAM_NUMBER of Optools Instances ----\n"
+echo -e "\n\n ---- Creating $TEAM_NUMBER of Console Instances ----\n"
 ./NamespaceSetup.sh
 
 # Finish and give runtime as well as nice message
 runtime=$(($(date +%s)-start_time))
 FINISHED
 echo
-echo "It took $(( $runtime / 60 )) minutes and $(( $runtime % 60 )) seconds to setup $TEAM_NUMBER optools instances each in an unique namespace"
+echo "It took $(( $runtime / 60 )) minutes and $(( $runtime % 60 )) seconds to setup $TEAM_NUMBER Console instances each in an unique namespace"

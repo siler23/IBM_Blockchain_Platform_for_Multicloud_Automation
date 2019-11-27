@@ -35,7 +35,7 @@ if [ "${CERTS}" = "byo" ]; then
     fi
 fi
 
-# Make an array of available ports for helm deploy and name a file
+# Make an array of available ports for console deployment and name a file
 # to hold oldPorts for the lab
 declare -a available_ports
 export oldPorts="oldPorts.txt"
@@ -48,7 +48,7 @@ then
     echo >> portList.txt
 fi
 
-# Create Namespace with all necessary resources to deploy the optools helm chart
+# Create Namespace with all necessary resources to deploy the operator and console
 for (( i=${START_NUMBER}; i < ${TEAM_NUMBER}; i++ ))
 do
     if [ ${i} -lt 10 ]
@@ -73,11 +73,10 @@ do
     fi
 
     export NAMESPACE="${PREFIX}-${team}"
-    export UI_SECRET="ibp-ui-secret"
     export DOCKER_SECRET="blockchain-docker-registry"
     # TLS_SECRET only used if CERTS=byo or CERTS=icp
     export TLS_SECRET="blockchain-tls"
-    export HELM_NAME="${NAMESPACE}-ibp-console"
+    export BASE_NAME="${NAMESPACE}-ibp"
     
     echo "Setting up namespace ${NAMESPACE}"
 
@@ -92,12 +91,15 @@ do
         # TLS_SECRET only used if CERTS=byo or CERTS=icp
         export TLS_SECRET=""
     fi
-    kubectl create secret generic "${UI_SECRET}" --from-literal=password="${INITIAL_PASSWORD}"
     kubectl create sa "${SERVICE_ACCOUNT_NAME}"
     kubectl create rolebinding ibp-admin --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${IBP_CLUSTERROLE}"
     kubectl create rolebinding ibp-psp --group system:serviceaccounts:"${NAMESPACE}" --clusterrole="${PSP_CLUSTERROLE}"
     kubectl create clusterrolebinding "${NAMESPACE}"-ibp-crd --serviceaccount "${NAMESPACE}":"${SERVICE_ACCOUNT_NAME}" --clusterrole="${CRD_CLUSTERROLE}"
-    kubectl create secret generic blockchain-docker-registry --from-literal=.dockerconfigjson=$(kubectl get secret -n "${DOCKER_NAMESPACE}" sa-"${DOCKER_NAMESPACE}" -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode) --type=kubernetes.io/dockerconfigjson
+    if [ -z ${CLUSTER_HOSTNAME} ]; then
+        kubectl create secret docker-registry ${DOCKER_SECRET} --docker-server=${DOCKER_SERVER}/${DOCKER_NAMESPACE} --docker-username=${DOCKER_USERNAME} --docker-password=${API_KEY}
+    else
+        kubectl create secret generic blockchain-docker-registry --from-literal=.dockerconfigjson=$(kubectl get secret -n "${DOCKER_NAMESPACE}" sa-"${DOCKER_NAMESPACE}" -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode) --type=kubernetes.io/dockerconfigjson
+    fi
 
     set +x
     # Get used ports. Run this every time ports are going to be given to prevent port collision 
@@ -124,27 +126,42 @@ do
         done
     done < "$oldPorts" 
 
-    optools_number=$(( (${i}-${START_NUMBER}) * 2 ))
+    console_number=$(( (${i}-${START_NUMBER}) * 2 ))
     proxy_number=$(( (${i}-${START_NUMBER}) * 2 + 1 ))
 
-    export OPTOOLS_PORT=${available_ports[$optools_number]}
+    export CONSOLE_PORT=${available_ports[$console_number]}
     export PROXY_PORT=${available_ports[$proxy_number]}
-    # Deploy helm chart by calling create_optools.sh script with variables set
-    ./create_optools.sh
-    
-    echo "****************   ${HELM_NAME}  ****************" >> portList.txt
-    echo "${HELM_NAME} optools URL: https://${CONSOLE_HOSTNAME}:${OPTOOLS_PORT}" >> portList.txt
-    echo "${HELM_NAME} proxy URL: https://${CONSOLE_HOSTNAME}:${PROXY_PORT}" >> portList.txt
-    echo "${HELM_NAME} USERNAME: ${EMAIL}" >> portList.txt
-    echo "${HELM_NAME} PASSWORD: ${INITIAL_PASSWORD}" >> portList.txt
-    echo >> portList.txt
+    # Deploy operator and console deployments by calling create_operator_console.sh script with variables set
+    ./create_operator_console.sh
     
     if [ $? != 0 ]
     then
-        echo "Optools Deployment ${team} failed"
+        echo "CONSOLE Deployment ${team} failed"
         exit 1
     fi
-    sleep 3
+
+    SECONDS=0
+    while (( $SECONDS < 600 ));
+    do 
+        SVC_NAME=$(kubectl get svc | grep "ibpconsole-service" | awk '{print $1}')
+        if [ "${SVC_NAME}" == "ibpconsole-service" ]; then
+            break;
+        fi
+        sleep 3
+    done
+
+    if [ $SECONDS -ge 600 ]
+    then
+        echo "Timed out waiting for service: ${SVC_NAME} to be create "
+        exit 1
+    fi
+
+    echo "****************   ${BASE_NAME}  ****************" >> portList.txt
+    echo "${BASE_NAME} console URL: https://${CONSOLE_HOSTNAME}:${CONSOLE_PORT}" >> portList.txt
+    echo "${BASE_NAME} proxy URL: https://${CONSOLE_HOSTNAME}:${PROXY_PORT}" >> portList.txt
+    echo "${BASE_NAME} USERNAME: ${EMAIL}" >> portList.txt
+    echo "${BASE_NAME} PASSWORD: ${INITIAL_PASSWORD}" >> portList.txt
+    echo >> portList.txt
 done
 
 if [ ${START_NUMBER} -gt 0 ]
@@ -164,21 +181,41 @@ do
     else
         export team="${i}"
     fi
-    optools_number=$(( ($i-${START_NUMBER}) * 2 ))
+    console_number=$(( ($i-${START_NUMBER}) * 2 ))
     proxy_number=$(( ($i-${START_NUMBER}) * 2 + 1 ))
 
     NAMESPACE="${PREFIX}-${team}"
-    HELM_NAME="${NAMESPACE}"-ibp-console
-    echo "Checking deploy for ${HELM_NAME}"
+    
+    echo "Checking ibp-operator deploy in namespace: ${NAMESPACE}"
 
-    # Check for all pods to come up successfully in all namespaces and add each of their 
-    # exposed ports to the list when they do.
     while (( $SECONDS < 600 ));
     do 
-        POD_NAME=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $1}')
-        POD_STATUS=$(kubectl get pods -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $3}')
-        TOTAL_CONTAINERS=$(kubectl get pod -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $2}' | awk '{print substr($0,length,1)}')
-        IS_READY=$(kubectl get pods -n "${NAMESPACE}" | grep "${HELM_NAME}" | awk '{print $2}')
+        POD_NAME=$(kubectl get pod -n "${NAMESPACE}" | grep "ibp-operator" | awk '{print $1}')
+        POD_STATUS=$(kubectl get pods -n "${NAMESPACE}" | grep "ibp-operator" | awk '{print $3}')
+        TOTAL_CONTAINERS=$(kubectl get pod -n "${NAMESPACE}" | grep "ibp-operator" | awk '{print $2}' | awk '{print substr($0,length,1)}')
+        IS_READY=$(kubectl get pods -n "${NAMESPACE}" | grep "ibp-operator" | awk '{print $2}')
+        if [ "${IS_READY}" == "${TOTAL_CONTAINERS}/${TOTAL_CONTAINERS}" ]
+        then
+            break;
+        fi
+        echo "Waiting for pod ${POD_NAME} to start completion. Status = ${POD_STATUS}, Readiness = ${IS_READY}"
+        sleep 3
+    done
+
+    if [ $SECONDS -ge 600 ]
+    then
+        echo "Timed out waiting for pod: ${POD_NAME} to start completion"
+        exit 1
+    fi
+    SECONDS=0
+    echo "Checking ibpconsole deploy in namespace: ${NAMESPACE}"
+
+    while (( $SECONDS < 600 ));
+    do 
+        POD_NAME=$(kubectl get pod -n "${NAMESPACE}" | grep "ibpconsole" | awk '{print $1}')
+        POD_STATUS=$(kubectl get pods -n "${NAMESPACE}" | grep "ibpconsole" | awk '{print $3}')
+        TOTAL_CONTAINERS=$(kubectl get pod -n "${NAMESPACE}" | grep "ibpconsole" | awk '{print $2}' | awk '{print substr($0,length,1)}')
+        IS_READY=$(kubectl get pods -n "${NAMESPACE}" | grep "ibpconsole" | awk '{print $2}')
         if [ "${IS_READY}" == "${TOTAL_CONTAINERS}/${TOTAL_CONTAINERS}" ]
         then
             break;

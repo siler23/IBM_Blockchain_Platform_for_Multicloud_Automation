@@ -1,4 +1,4 @@
-cat << EOF > ${HELM_NAME}-tls-cert.yaml
+cat << EOF > ${BASE_NAME}-tls-cert.yaml
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -23,6 +23,6 @@ spec:
   - ${CONSOLE_HOSTNAME}
 EOF
 
-kubectl apply -f ${HELM_NAME}-tls-cert.yaml
+kubectl apply -f ${BASE_NAME}-tls-cert.yaml
 # Cleanup after applying
-rm "${HELM_NAME}"-tls-cert.yaml
+rm "${BASE_NAME}"-tls-cert.yaml

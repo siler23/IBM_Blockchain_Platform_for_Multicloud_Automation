@@ -2,7 +2,7 @@
  kind: ClusterRole
  metadata:
    annotations:
-   name: ibm-blockchain-platform-clusterrole
+   name: ibm-blockchain-platform-clusterrole-211
  rules:
  - apiGroups:
    - '*'
@@ -19,6 +19,7 @@
    - roles
    - rolebindings
    - serviceaccounts
+   - nodes
    verbs:
    - '*'
  - apiGroups:

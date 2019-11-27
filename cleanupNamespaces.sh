@@ -40,8 +40,12 @@ do
         export team="${i}"
     fi
     set -x
-    HELM_NAME="${PREFIX}-${team}-ibp-console"
-    helm delete "${HELM_NAME}" --purge --tls 
+    NAMESPACE="${PREFIX}-${team}"
+    kubectl delete ibpca -n ${NAMESPACE} --all
+    kubectl delete ibppeer -n ${NAMESPACE} --all
+    kubectl delete ibporderer -n ${NAMESPACE} --all
+    kubectl delete deployment ibp-operator -n ${NAMESPACE}
+    kubectl delete ibpconsole -n ${NAMESPACE} --all
     kubectl delete clusterrolebinding "${PREFIX}-${team}-ibp-crd"
     set +x
 done 
@@ -64,4 +68,4 @@ echo
 runtime=$(($(date +%s)-start_time))
 Cleanup
 echo
-echo "It took $(( $runtime / 60 )) minutes and $(( $runtime % 60 )) seconds to cleanup $TEAM_NUMBER optools instances and their namespaces"
+echo "It took $(( $runtime / 60 )) minutes and $(( $runtime % 60 )) seconds to cleanup $TEAM_NUMBER Console instances and their namespaces"
