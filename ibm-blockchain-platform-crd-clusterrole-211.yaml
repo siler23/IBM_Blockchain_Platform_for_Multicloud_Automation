@@ -12,3 +12,12 @@ rules:
   - watch
   - list
   - create
+- apiGroups:
+  - "*"
+  resources:
+  - nodes
+  - persistentvolumes
+  verbs:
+  - get
+  - watch
+  - list

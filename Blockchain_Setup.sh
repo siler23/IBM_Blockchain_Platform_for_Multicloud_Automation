@@ -97,7 +97,7 @@ export CLUSTER_HOSTNAME=${CLUSTER_HOSTNAME:-""}
 if [ -z ${CLUSTER_HOSTNAME} ]; then
 # Need to manually enter DOCKER_USERNAME and Password to create secret from API_KEY if not using local images
     export DOCKER_USERNAME=${DOCKER_USERNAME:-""}
-    export DOCKER_PASSWORD=${DOCKER_PASSWORD:-""}
+    export API_KEY=${API_KEY:-""}
     export DOCKER_SERVER=${DOCKER_SERVER:-"ip-ibp-images-team-docker-remote.artifactory.swg-devops.com"}
 else
 # Using local images with local registry
