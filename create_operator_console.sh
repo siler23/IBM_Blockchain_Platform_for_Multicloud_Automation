@@ -1,18 +1,18 @@
 #!/bin/bash -e
 
-export CA_IMAGE=${CA_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-ca"}
-export CONFIGTXLATOR_IMAGE=${CONFIGTXLATOR_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-utilities"}
-export COUCH_IMAGE=${COUCH_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-couchdb"}
-export DEPLOYER_IMAGE=${DEPLOYER_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-deployer"}
-export DIND_IMAGE=${DIND_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-dind"}
-export FLUENTD_IMAGE=${FLUENTD_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-fluentd"}
-export GRPC_IMAGE=${GRPC_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-grpcweb"}
-export IBP_INIT_IMAGE=${IBP_INIT_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-init"}
+export CA_IMAGE=${CA_IMAGE:-"ibp-ca"}
+export CONFIGTXLATOR_IMAGE=${CONFIGTXLATOR_IMAGE:-"ibp-utilities"}
+export COUCH_IMAGE=${COUCH_IMAGE:-"ibp-couchdb"}
+export DEPLOYER_IMAGE=${DEPLOYER_IMAGE:-"ibp-deployer"}
+export DIND_IMAGE=${DIND_IMAGE:-"ibp-dind"}
+export FLUENTD_IMAGE=${FLUENTD_IMAGE:-"ibp-fluentd"}
+export GRPC_IMAGE=${GRPC_IMAGE:-"ibp-grpcweb"}
+export IBP_INIT_IMAGE=${IBP_INIT_IMAGE:-"ibp-init"}
 export OPERATOR_IMAGE=${OPERATOR_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-operator"}
-export CONSOLE_IMAGE=${CONSOLE_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-console"}
-export ORDERER_IMAGE=${ORDERER_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-orderer"}
-export PEER_IMAGE=${PEER_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-peer"}
-export CA_INIT_IMAGE=${CA_INIT_IMAGE:-"${DOCKER_SERVER}/${DOCKER_NAMESPACE}/ibp-ca-init"}
+export CONSOLE_IMAGE=${CONSOLE_IMAGE:-"ibp-console"}
+export ORDERER_IMAGE=${ORDERER_IMAGE:-"ibp-orderer"}
+export PEER_IMAGE=${PEER_IMAGE:-"ibp-peer"}
+export CA_INIT_IMAGE=${CA_INIT_IMAGE:-"ibp-ca-init"}
 
 export OPERATOR_DATE=${OPERATOR_DATE:-"${IMAGE_DATE}"}
 export IBP_INIT_DATE=${IBP_INIT_DATE:-"${IMAGE_DATE}"}
@@ -99,7 +99,7 @@ cat << EOF > ${BASE_NAME}-operator-deploy.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ibp-operator
+  name: "ibp-operator"
   labels:
     release: "operator"
     helm.sh/chart: "ibm-ibp"
@@ -183,8 +183,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "ibp-operator"
-            - name: ISOPENSHIFT
-              value: "false"
+            - name: CLUSTERTYPE
+              value: "ICP"
           resources:
             requests:
               cpu: ${OPERATOR_CPU_REQUESTS}
@@ -219,8 +219,10 @@ spec:
   serviceAccountName: ${SERVICE_ACCOUNT_NAME}
   email: "${EMAIL}"
   password: "${INITIAL_PASSWORD}"
-  image:
-    imagePullSecret: ${DOCKER_SECRET}
+  registryURL: "${DOCKER_SERVER}/${DOCKER_NAMESPACE}"
+  imagePullSecret: "${DOCKER_SECRET}"
+  images:
+    imagePullSecret: "${DOCKER_SECRET}"
     consoleInitImage: ${IBP_INIT_IMAGE} 
     consoleInitTag: ${IBP_VERSION}-${IBP_INIT_DATE}-${ARCH}
     consoleImage: ${CONSOLE_IMAGE}

@@ -108,12 +108,12 @@ fi
 export DOCKER_NAMESPACE=${DOCKER_NAMESPACE:-"cp"}
 
 # Version of HLF, default to 1.4.1 for IBP for Multicloud v2
-export HLF_VERSION=${HLF_VERSION:-"1.4.3"}
+export HLF_VERSION=${HLF_VERSION:-"1.4.4"}
 
 export HLF_VERSION_LONG=${HLF_VERSION_LONG:-"${HLF_VERSION}-0"}
 
 # Version of IBP
-export IBP_VERSION=${IBP_VERSION:-"2.1.1"}
+export IBP_VERSION=${IBP_VERSION:-"2.1.2"}
 
 # Product ID of IBP
 export PRODUCT_ID=${PRODUCT_ID:-"54283fa24f1a4e8589964e6e92626ec4"}
@@ -122,7 +122,7 @@ export PRODUCT_ID=${PRODUCT_ID:-"54283fa24f1a4e8589964e6e92626ec4"}
 export COUCH_VERSION=${COUCH_VERSION:-"2.3.1"}
 
 # Date images cut
-export IMAGE_DATE=${IMAGE_DATE:-"20191108"}
+export IMAGE_DATE=${IMAGE_DATE:-"20191217"}
 
 # Clusterrole set that has necessary resource access for IBM Blockchain Platform console and operator. 
 # Following resources in directory, his is ibm-blockchain-platform-clusterrole. The service account will get these
